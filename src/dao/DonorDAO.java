@@ -1,61 +1,47 @@
 package dao;
 
 import model.Donor;
-import util.DBConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DonorDAO {
 
+    private static final List<Donor> mockDonors = new ArrayList<>();
+
+    static {
+        mockDonors.add(createDonor(1, "Alice Johnson", 35, "Kidney", "approved"));
+        mockDonors.add(createDonor(2, "Bob Williams", 42, "Liver", "pending"));
+    }
+
+    private static Donor createDonor(int id, String name, int age, String organ, String status) {
+        Donor d = new Donor();
+        d.setId(id);
+        d.setName(name);
+        d.setAge(age);
+        d.setOrgan(organ);
+        d.setStatus(status);
+        return d;
+    }
+
     public void registerDonor(Donor donor) {
-        String query = "INSERT INTO donors (name, age, organ, status) VALUES (?, ?, ?, ?)";
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, donor.getName());
-            statement.setInt(2, donor.getAge());
-            statement.setString(3, donor.getOrgan());
-            statement.setString(4, "pending"); // Default status
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Simulate adding to the list for the session
+        donor.setId(mockDonors.size() + 1);
+        donor.setStatus("pending");
+        mockDonors.add(donor);
+        System.out.println("Donor added to mock list: " + donor.getName());
     }
 
     public List<Donor> getAllDonors() {
-        List<Donor> donors = new ArrayList<>();
-        String query = "SELECT * FROM donors";
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Donor donor = new Donor();
-                donor.setId(resultSet.getInt("id"));
-                donor.setName(resultSet.getString("name"));
-                donor.setAge(resultSet.getInt("age"));
-                donor.setOrgan(resultSet.getString("organ"));
-                donor.setStatus(resultSet.getString("status"));
-                donors.add(donor);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return donors;
+        return new ArrayList<>(mockDonors); // Return a copy to prevent modification
     }
 
     public void updateDonorStatus(int donorId, String status) {
-        String query = "UPDATE donors SET status = ? WHERE id = ?";
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, status);
-            statement.setInt(2, donorId);
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        Optional<Donor> donorOptional = mockDonors.stream().filter(d -> d.getId() == donorId).findFirst();
+        donorOptional.ifPresent(donor -> {
+            donor.setStatus(status);
+            System.out.println("Mock donor status updated: " + donor.getName() + " to " + status);
+        });
     }
 }

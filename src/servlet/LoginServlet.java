@@ -24,11 +24,10 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
-        String hashedPassword = UserDAO.hashPassword(password);
 
         User user = userDAO.getUserByEmail(email);
 
-        if (user != null && user.getPassword().equals(hashedPassword)) {
+        if (user != null && user.getPassword().equals(password)) {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
 

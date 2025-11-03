@@ -1,50 +1,42 @@
 package dao;
 
 import model.TestCost;
-import util.DBConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TestDAO {
 
+    private static final List<TestCost> mockTestCosts = new ArrayList<>();
+
+    static {
+        mockTestCosts.add(createTestCost(1, "MRI Scan", "City Diagnostics", 300.00, true));
+        mockTestCosts.add(createTestCost(2, "X-Ray", "General Labs", 75.50, true));
+        mockTestCosts.add(createTestCost(3, "Blood Test", "County Labs", 50.00, false));
+        mockTestCosts.add(createTestCost(4, "MRI Scan", "Advanced Imaging", 350.00, false));
+    }
+
+    private static TestCost createTestCost(int id, String testName, String labName, double cost, boolean insurance) {
+        TestCost tc = new TestCost();
+        tc.setId(id);
+        tc.setTestName(testName);
+        tc.setLabName(labName);
+        tc.setCost(cost);
+        tc.setInsurance(insurance);
+        return tc;
+    }
+
     public List<TestCost> getTestCostsByName(String testName) {
-        List<TestCost> testCosts = new ArrayList<>();
-        String query = "SELECT * FROM lab_tests WHERE test_name ILIKE ?";
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, "%" + testName + "%");
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                TestCost testCost = new TestCost();
-                testCost.setId(resultSet.getInt("id"));
-                testCost.setTestName(resultSet.getString("test_name"));
-                testCost.setLabName(resultSet.getString("lab_name"));
-                testCost.setCost(resultSet.getDouble("cost"));
-                testCost.setInsurance(resultSet.getBoolean("insurance"));
-                testCosts.add(testCost);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return testCosts;
+        return mockTestCosts.stream()
+                .filter(tc -> tc.getTestName().equalsIgnoreCase(testName))
+                .collect(Collectors.toList());
     }
 
     public void addTest(TestCost testCost) {
-        String query = "INSERT INTO lab_tests (test_name, lab_name, cost, insurance) VALUES (?, ?, ?, ?)";
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, testCost.getTestName());
-            statement.setString(2, testCost.getLabName());
-            statement.setDouble(3, testCost.getCost());
-            statement.setBoolean(4, testCost.isInsurance());
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Simulate adding to the list
+        testCost.setId(mockTestCosts.size() + 1);
+        mockTestCosts.add(testCost);
+        System.out.println("Test added to mock list: " + testCost.getTestName());
     }
 }

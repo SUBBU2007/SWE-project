@@ -1,33 +1,30 @@
 package dao;
 
 import model.Assessment;
-import util.DBConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AssessmentDAO {
 
+    private static final List<Assessment> mockAssessmentRules = new ArrayList<>();
+
+    static {
+        mockAssessmentRules.add(createRule(1, "fever,cough", "Common Cold or Flu. Rest and drink fluids."));
+        mockAssessmentRules.add(createRule(2, "headache,nausea", "Migraine or Dehydration. Drink water and rest in a dark room."));
+        mockAssessmentRules.add(createRule(3, "fever,rash", "Possible infection. Consult a doctor."));
+        mockAssessmentRules.add(createRule(4, "cough", "Could be a common cold, allergies, or something more serious. If it persists, see a doctor."));
+    }
+
+    private static Assessment createRule(int id, String symptom, String suggestion) {
+        Assessment rule = new Assessment();
+        rule.setId(id);
+        rule.setSymptom(symptom);
+        rule.setSuggestion(suggestion);
+        return rule;
+    }
+
     public List<Assessment> getAllAssessmentRules() {
-        List<Assessment> rules = new ArrayList<>();
-        String query = "SELECT * FROM assessment_rules";
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Assessment rule = new Assessment();
-                rule.setId(resultSet.getInt("id"));
-                rule.setSymptom(resultSet.getString("symptom"));
-                rule.setSuggestion(resultSet.getString("suggestion"));
-                rules.add(rule);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return rules;
+        return new ArrayList<>(mockAssessmentRules); // Return a copy
     }
 }

@@ -1,51 +1,42 @@
 package dao;
 
 import model.BloodBank;
-import util.DBConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BloodDAO {
 
+    private static final List<BloodBank> mockBloodBanks = new ArrayList<>();
+
+    static {
+        mockBloodBanks.add(createBloodBank(1, "City Hospital", "New York", "A+", 10));
+        mockBloodBanks.add(createBloodBank(2, "General Hospital", "New York", "O-", 5));
+        mockBloodBanks.add(createBloodBank(3, "County Hospital", "Los Angeles", "B+", 8));
+        mockBloodBanks.add(createBloodBank(4, "Downtown Clinic", "New York", "A+", 2));
+    }
+
+    private static BloodBank createBloodBank(int id, String hospital, String city, String bloodGroup, int units) {
+        BloodBank bb = new BloodBank();
+        bb.setId(id);
+        bb.setHospital(hospital);
+        bb.setCity(city);
+        bb.setBloodGroup(bloodGroup);
+        bb.setUnits(units);
+        return bb;
+    }
+
     public List<BloodBank> getBloodStockByCityAndGroup(String city, String bloodGroup) {
-        List<BloodBank> bloodBanks = new ArrayList<>();
-        String query = "SELECT * FROM blood_bank WHERE city = ? AND blood_group = ?";
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, city);
-            statement.setString(2, bloodGroup);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                BloodBank bloodBank = new BloodBank();
-                bloodBank.setId(resultSet.getInt("id"));
-                bloodBank.setHospital(resultSet.getString("hospital"));
-                bloodBank.setCity(resultSet.getString("city"));
-                bloodBank.setBloodGroup(resultSet.getString("blood_group"));
-                bloodBank.setUnits(resultSet.getInt("units"));
-                bloodBanks.add(bloodBank);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return bloodBanks;
+        return mockBloodBanks.stream()
+                .filter(bb -> bb.getCity().equalsIgnoreCase(city) && bb.getBloodGroup().equalsIgnoreCase(bloodGroup))
+                .collect(Collectors.toList());
     }
 
     public void addBloodStock(BloodBank bloodBank) {
-        String query = "INSERT INTO blood_bank (hospital, city, blood_group, units) VALUES (?, ?, ?, ?)";
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, bloodBank.getHospital());
-            statement.setString(2, bloodBank.getCity());
-            statement.setString(3, bloodBank.getBloodGroup());
-            statement.setInt(4, bloodBank.getUnits());
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Simulate adding to the list
+        bloodBank.setId(mockBloodBanks.size() + 1);
+        mockBloodBanks.add(bloodBank);
+        System.out.println("Blood stock added to mock list: " + bloodBank.getHospital());
     }
 }
